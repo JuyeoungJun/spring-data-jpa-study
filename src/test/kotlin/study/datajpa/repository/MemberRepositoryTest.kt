@@ -25,6 +25,9 @@ class MemberRepositoryTest {
     @PersistenceContext
     lateinit var em: EntityManager
 
+    @Autowired
+    lateinit var memberQueryRepository: MemberQueryRepository
+
     @Test
     fun testMember() {
         val member = Member(userName = "memberA")
@@ -267,5 +270,15 @@ class MemberRepositoryTest {
 //        val findMember = member1.id?.let { memberRepository.findById(it) }?.get()
         val findMember = memberRepository.findLockByUserName("member1")
 
+    }
+
+    @Test
+    fun callCustom() {
+        val findMemberCustom = memberRepository.findMemberCustom()
+    }
+
+    @Test
+    fun memberQueryRepositoryTest() {
+        val findAllMembers = memberQueryRepository.findAllMembers()
     }
 }

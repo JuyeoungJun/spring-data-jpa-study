@@ -15,7 +15,7 @@ import java.util.*
 import javax.persistence.LockModeType
 import javax.persistence.QueryHint
 
-interface MemberRepository : JpaRepository<Member, Long> {
+interface MemberRepository : JpaRepository<Member, Long>, MemberRepositoryCustom {
 
     fun findByUserNameAndAgeGreaterThan(userName: String, age: Int): MutableList<Member>
 
@@ -40,8 +40,8 @@ interface MemberRepository : JpaRepository<Member, Long> {
 
     fun findOptionalByUserName(userName: String): Optional<Member>
 
-//    @Query(value = "select m from Member m left join m.team t",
-//        countQuery = "select count(m.userName) from Member m")
+    @Query(value = "select m from Member m left join m.team t",
+        countQuery = "select count(m.userName) from Member m")
     fun findByAge(age: Int, pageable: Pageable): Page<Member>
 
     @Modifying(clearAutomatically = true)
@@ -51,8 +51,8 @@ interface MemberRepository : JpaRepository<Member, Long> {
     @Query("select m from Member m left join fetch m.team")
     fun findMemberFetchJoin(): MutableList<Member>
 
-    @EntityGraph(attributePaths = ["team"])
-    override fun findAll(): MutableList<Member>
+//    @EntityGraph(attributePaths = ["team"])
+//    override fun findAll(): MutableList<Member>
 
     @EntityGraph(attributePaths = ["team"])
     @Query("select m from Member m")

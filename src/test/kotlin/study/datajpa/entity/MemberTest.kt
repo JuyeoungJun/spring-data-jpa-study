@@ -2,9 +2,11 @@ package study.datajpa.entity
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.Rollback
 import org.springframework.transaction.annotation.Transactional
+import study.datajpa.repository.MemberRepository
 import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
 
@@ -14,6 +16,9 @@ import javax.persistence.PersistenceContext
 class MemberTest {
 
     @PersistenceContext lateinit var em: EntityManager
+
+    @Autowired
+    lateinit var memberRepository: MemberRepository
 
     @Test
     fun testEntity() {
@@ -45,6 +50,29 @@ class MemberTest {
             println("member = $it")
             println("-> member.team = ${it.team}" )
         }
+
+    }
+
+    @Test
+    fun jpaEventBaseEntity() {
+        // given
+        val member = Member(userName = "member1")
+        memberRepository.save(member)
+
+        Thread.sleep(100)
+        member.userName = "member2"
+        em.flush()
+        em.clear()
+
+        // when
+        val findMember = memberRepository.findById(member.id!!).get()
+
+        // then
+        println("findMember.createdDate = ${findMember.createdDate}")
+        println("findMember.updatedDate = ${findMember.lastModifiedDate}")
+        println("findMember.createdBy = ${findMember.createdBy}")
+        println("findMember.lastModifiedBy = ${findMember.lastModifiedBy}")
+
 
     }
 }
