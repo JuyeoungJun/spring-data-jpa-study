@@ -41,4 +41,49 @@ class MemberJpaRepository(
         """.trimIndent(), Long::class.javaObjectType).singleResult
     }
 
+    fun findByUsernameAndAgeGreaterThen(userName: String, age: Int): MutableList<Member>? {
+        return em.createQuery("""
+            select m from Member m where m.userName = :userName and m.age > :age
+        """.trimIndent(), Member::class.java)
+            .setParameter("userName", userName)
+            .setParameter("age", age)
+            .resultList
+    }
+
+    fun findByUserName(userName: String): MutableList<Member> {
+        return em.createNamedQuery("Member.findByUserName", Member::class.java)
+            .setParameter("userName", userName)
+            .resultList
+    }
+
+    fun findByPage(age: Int, offSet: Int, limit: Int): MutableList<Member> {
+        return em.createQuery("""
+            select m from Member m 
+            where m.age = :age
+            order by m.userName desc 
+        """.trimIndent(), Member::class.java)
+            .setParameter("age", age)
+            .setFirstResult(offSet)
+            .setMaxResults(limit)
+            .resultList
+    }
+
+    fun totalCount(age: Int): Long? {
+        return em.createQuery("""
+            select count(m) from Member m 
+            where m.age = :age
+        """.trimIndent(), Long::class.javaObjectType)
+            .setParameter("age", age)
+            .singleResult
+    }
+
+    fun bulkAgePlus(age: Int): Int {
+        return em.createQuery("""
+            update Member m set m.age = m.age + 1
+            where m.age >= :age
+        """.trimIndent())
+            .setParameter("age", age)
+            .executeUpdate()
+    }
+
 }

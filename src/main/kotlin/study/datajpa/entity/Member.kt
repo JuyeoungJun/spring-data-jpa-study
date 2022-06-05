@@ -3,6 +3,14 @@ package study.datajpa.entity
 import javax.persistence.*
 
 @Entity
+//@NamedQuery(
+//    name = "Member.findByUserName",
+//    query = "select m from Member m where m.userName = :userName"
+//)
+//@NamedEntityGraph(
+//    name = "Member.all",
+//    attributeNodes = [NamedAttributeNode("team")]
+//)
 class Member(
     @Id @GeneratedValue
     @Column(name = "member_id")

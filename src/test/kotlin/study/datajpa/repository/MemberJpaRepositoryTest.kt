@@ -52,5 +52,66 @@ class MemberJpaRepositoryTest {
         assertThat(deletedCount).isEqualTo(0)
     }
 
+    @Test
+    fun findByUsernameAndAgeGreaterThen() {
+        val member1 = Member(userName = "AAA", age = 10)
+        val member2 = Member(userName = "AAA", age = 20)
 
+        memberJpaRepository.save(member1)
+        memberJpaRepository.save(member2)
+
+        val result = memberJpaRepository.findByUsernameAndAgeGreaterThen("AAA", 15)
+
+        assertThat(result?.get(0)?.userName).isEqualTo("AAA")
+        assertThat(result?.get(0)?.age).isEqualTo(20)
+        assertThat(result?.size).isEqualTo(1)
+
+    }
+
+    @Test
+    fun testNamedQuery() {
+        val member1 = Member(userName = "AAA", age = 10)
+        val member2 = Member(userName = "AAA", age = 20)
+
+        memberJpaRepository.save(member1)
+        memberJpaRepository.save(member2)
+
+        val result = memberJpaRepository.findByUserName("AAA")
+
+        val findMember = result.first()
+        assertThat(findMember).isEqualTo(member1)
+
+    }
+
+    @Test
+    fun paging() {
+        memberJpaRepository.save(Member(userName = "member1", age = 10))
+        memberJpaRepository.save(Member(userName = "member2", age = 10))
+        memberJpaRepository.save(Member(userName = "member3", age = 10))
+        memberJpaRepository.save(Member(userName = "member4", age = 10))
+        memberJpaRepository.save(Member(userName = "member5", age = 10))
+
+        val age = 10
+        val offset = 0
+        val limit = 3
+
+        val result = memberJpaRepository.findByPage(age, offset, limit)
+        val totalCount = memberJpaRepository.totalCount(age)
+
+        assertThat(result.size).isEqualTo(3)
+        assertThat(totalCount).isEqualTo(5)
+    }
+
+    @Test
+    fun bulkUpdate() {
+        memberJpaRepository.save(Member(userName = "member1", age = 10))
+        memberJpaRepository.save(Member(userName = "member2", age = 19))
+        memberJpaRepository.save(Member(userName = "member3", age = 20))
+        memberJpaRepository.save(Member(userName = "member4", age = 21))
+        memberJpaRepository.save(Member(userName = "member5", age = 40))
+
+        val resultCount = memberJpaRepository.bulkAgePlus(20)
+
+        assertThat(resultCount).isEqualTo(3)
+    }
 }
