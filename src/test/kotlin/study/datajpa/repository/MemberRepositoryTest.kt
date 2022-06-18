@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.domain.Example
+import org.springframework.data.domain.ExampleMatcher
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.transaction.annotation.Transactional
@@ -280,5 +282,95 @@ class MemberRepositoryTest {
     @Test
     fun memberQueryRepositoryTest() {
         val findAllMembers = memberQueryRepository.findAllMembers()
+    }
+
+    @Test
+    fun specBasic() {
+        // given
+        val teamA = Team(name = "teamA")
+        em.persist(teamA)
+
+        val m1 = Member(userName = "m1", age = 0, team = teamA)
+        val m2 = Member(userName = "m2", age = 0, team = teamA)
+        em.persist(m1)
+        em.persist(m2)
+
+        em.flush()
+        em.clear()
+
+        // when
+        MemberSpec.teamName("teamA")
+
+    }
+
+    @Test
+    fun queryByExample() {
+        // given
+        val teamA = Team(name = "teamA")
+        em.persist(teamA)
+
+        val m1 = Member(userName = "m1", age = 0, team = teamA)
+        val m2 = Member(userName = "m2", age = 0, team = teamA)
+        em.persist(m1)
+        em.persist(m2)
+
+        em.flush()
+        em.clear()
+
+        // when
+        // Probe
+        val member = Member(userName = "m1")
+        val team = Team(name = "teamA")
+        member.team = team
+
+        val matcher = ExampleMatcher.matching().withIgnoreCase("age")
+
+        val example = Example.of(member, matcher)
+
+        val result = memberRepository.findAll(example)
+
+        Assertions.assertThat(result[0].userName).isEqualTo("m1")
+    }
+
+    @Test
+    fun projections() {
+        // given
+        val teamA = Team(name = "teamA")
+        em.persist(teamA)
+
+        val m1 = Member(userName = "m1", age = 0, team = teamA)
+        val m2 = Member(userName = "m2", age = 0, team = teamA)
+        em.persist(m1)
+        em.persist(m2)
+
+        em.flush()
+        em.clear()
+
+        // when
+        val result = memberRepository.findProjectionsByUserName("m1", NestedClosedProjections::class.java)
+        result?.forEach { println("userName: ${it.getTeam().getName()}") }
+    }
+
+    @Test
+    fun testNativeQuery() {
+        // given
+        val teamA = Team(name = "teamA")
+        em.persist(teamA)
+
+        val m1 = Member(userName = "m1", age = 0, team = teamA)
+        val m2 = Member(userName = "m2", age = 0, team = teamA)
+        em.persist(m1)
+        em.persist(m2)
+
+        em.flush()
+        em.clear()
+
+        // when
+        val result = memberRepository.findByNativeProjection(PageRequest.of(0, 10))
+        val contents = result.content
+        for (content in contents) {
+            println(content.getUserName())
+            println(content.getTeamName())
+        }
     }
 }

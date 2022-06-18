@@ -2,12 +2,7 @@ package study.datajpa.repository
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.data.jpa.repository.EntityGraph
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Lock
-import org.springframework.data.jpa.repository.Modifying
-import org.springframework.data.jpa.repository.Query
-import org.springframework.data.jpa.repository.QueryHints
+import org.springframework.data.jpa.repository.*
 import org.springframework.data.repository.query.Param
 import study.datajpa.dto.MemberDto
 import study.datajpa.entity.Member
@@ -15,7 +10,7 @@ import java.util.*
 import javax.persistence.LockModeType
 import javax.persistence.QueryHint
 
-interface MemberRepository : JpaRepository<Member, Long>, MemberRepositoryCustom {
+interface MemberRepository : JpaRepository<Member, Long>, MemberRepositoryCustom, JpaSpecificationExecutor<Member> {
 
     fun findByUserNameAndAgeGreaterThan(userName: String, age: Int): MutableList<Member>
 
@@ -40,8 +35,10 @@ interface MemberRepository : JpaRepository<Member, Long>, MemberRepositoryCustom
 
     fun findOptionalByUserName(userName: String): Optional<Member>
 
-    @Query(value = "select m from Member m left join m.team t",
-        countQuery = "select count(m.userName) from Member m")
+    @Query(
+        value = "select m from Member m left join m.team t",
+        countQuery = "select count(m.userName) from Member m"
+    )
     fun findByAge(age: Int, pageable: Pageable): Page<Member>
 
     @Modifying(clearAutomatically = true)
@@ -58,7 +55,7 @@ interface MemberRepository : JpaRepository<Member, Long>, MemberRepositoryCustom
     @Query("select m from Member m")
     fun findMemberEntityGraph(): MutableList<Member>
 
-//    @EntityGraph("Member.all")
+    //    @EntityGraph("Member.all")
     @EntityGraph(attributePaths = ["team"])
     fun findEntityGraphByUserName(@Param("userName") userName: String): MutableList<Member>
 
@@ -67,4 +64,11 @@ interface MemberRepository : JpaRepository<Member, Long>, MemberRepositoryCustom
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     fun findLockByUserName(userName: String): MutableList<Member>
+    fun <T> findProjectionsByUserName(@Param("userName") userName: String?, type: Class<T>?): List<T>?
+
+    @Query(value = "select * from member where user_name = ?", nativeQuery = true)
+    fun findByNativeQuery(userName: String): Member?
+
+    @Query(value = "select m.member_id as id, m.user_name, t.name as teamName from member m left join team t", countQuery = "select count(*) from member", nativeQuery = true)
+    fun findByNativeProjection(pageable: Pageable): Page<MemberProjection>
 }

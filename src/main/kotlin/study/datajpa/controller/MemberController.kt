@@ -36,12 +36,12 @@ class MemberController(
             .map(MemberDto::of)
     }
 
-    @PostConstruct
-    fun init() {
-        for (i in (0..100)) {
-            memberRepository.save(Member(userName = "user $i"))
-
-        }
-    }
+//    @PostConstruct
+//    fun init() {
+//        for (i in (0..100)) {
+//            memberRepository.save(Member(userName = "user $i"))
+//
+//        }
+//    }
 
 }
